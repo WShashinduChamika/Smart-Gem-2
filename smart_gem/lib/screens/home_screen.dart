@@ -13,8 +13,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
-    const ChatScreen(),
     const ChatHistoryScreen(),
+    const ChatScreen(),
     const UserProfileScreen()
   ];
   

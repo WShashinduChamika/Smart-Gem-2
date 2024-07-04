@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_gem/providers/chat_provider.dart';
+import 'package:smart_gem/widgets/bottom_chat_field.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -60,30 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                 ),
                 //input field
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 8 * width,
-                    vertical: 8 * height,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: messageController,
-                          decoration: const InputDecoration(
-                            hintText: "Type a message",
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          //chatProvider.sendMessage();
-                        },
-                        icon: const Icon(Icons.send),
-                      ),
-                    ],
-                  ),
-                ),
+               BottomChatField(chatProvider: chatProvider),
               ],
             ),
           ),

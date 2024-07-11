@@ -176,9 +176,12 @@ class ChatProvider extends ChangeNotifier {
     //get the imageUrls
     List<String> imageUrls = getImageUrls(isTextOnly: isTextOnly);
 
+    //set user message ID
+    final userMessageID = const Uuid().v4();
+
     //user message
     final userMessage = Message(
-      messageID: "",
+      messageID: userMessageID,
       message: StringBuffer(message),
       role: Role.user,
       chatID: chatID,
@@ -225,9 +228,12 @@ class ChatProvider extends ChangeNotifier {
       isTextOnly: isTextOnly,
     );
 
+    //set assistnant message ID
+    final assistantMessageID = const Uuid().v4();
+
     //assistant message
     final assistantMessage = userMessage.copyWith(
-      messageID: '',
+      messageID: assistantMessageID,
       role: Role.assistant,
       message: StringBuffer(''),
       timeSent: DateTime.now(),
@@ -236,19 +242,21 @@ class ChatProvider extends ChangeNotifier {
     //add the assistant message to the list
     _inChatMessages.add(assistantMessage);
     notifyListeners();
- 
+
     //wait for stream response
     chatSession.sendMessageStream(content).asyncMap((event) {
       return event;
     }).listen((event) {
       _inChatMessages
-          .firstWhere((element) => element.messageID == assistantMessage.messageID && element.role == Role.assistant)
+          .firstWhere((element) =>
+              element.messageID == assistantMessage.messageID &&
+              element.role.name == Role.assistant.name)
           .message
           .write(event.text);
       notifyListeners();
     }, onDone: () {
       //save the message to the database
-      
+
       //set isLoading false
       setIsLoading(value: false);
     }).onError((error, stackTrace) {

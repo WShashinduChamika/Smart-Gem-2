@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -22,7 +24,26 @@ class _BottomChatFieldState extends State<BottomChatField> {
     textFieldFocusNode.dispose();
     super.dispose();
   }
+  
+  Future<void> sendMessage({
+    required String message,
+    required ChatProvider chatProvider,
+    required bool isTextOnly
+  }) async {
+    //send message
+    try {
+      await chatProvider.sendMessage(
+        message: message,
+        isTextOnly: isTextOnly,
+      );
+    } catch (e) {
+      print('eror : $e ');
 
+    } finally {
+      messageController.clear();
+      textFieldFocusNode.unfocus();
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -49,6 +70,13 @@ class _BottomChatFieldState extends State<BottomChatField> {
               textInputAction: TextInputAction.send,
               onSubmitted: (String value) {
                 //chatProvider.sendMessage();
+                if(value.isNotEmpty){
+                sendMessage(
+                  message: messageController.text,
+                  chatProvider: widget.chatProvider,
+                  isTextOnly: true,
+                );
+              }
               },
               decoration: InputDecoration.collapsed(
                 hintText: "Enter your prompt here...",
@@ -62,6 +90,13 @@ class _BottomChatFieldState extends State<BottomChatField> {
           GestureDetector(
             onTap: () {
               //send message
+              if(messageController.text.isNotEmpty){
+                sendMessage(
+                  message: messageController.text,
+                  chatProvider: widget.chatProvider,
+                  isTextOnly: true,
+                );
+              }
             },
             child: Container(
               decoration: BoxDecoration(

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_gem/models/model.dart';
 import 'package:smart_gem/providers/chat_provider.dart';
+import 'package:smart_gem/widgets/assistance_message.dart';
 import 'package:smart_gem/widgets/bottom_chat_field.dart';
+import 'package:smart_gem/widgets/my_message_widget.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -54,9 +57,9 @@ class _ChatScreenState extends State<ChatScreen> {
                           itemCount: chatProvider.inChatMessages.length,
                           itemBuilder: (context, index) {
                             final message = chatProvider.inChatMessages[index];
-                            return ListTile(
-                              title: Text(message.message.toString()),
-                            );
+                            return  message.role == Role.user?
+                                MyMessages(message: message)
+                                : AssistanceMessage(message: message.message.toString());
                           },
                         ),
                 ),

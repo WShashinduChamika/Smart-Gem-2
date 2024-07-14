@@ -14,7 +14,7 @@ class AssistanceMessage extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: Theme.of(context).colorScheme.surfaceVariant ,
           borderRadius: BorderRadius.circular(18),
         ),
         constraints: BoxConstraints(

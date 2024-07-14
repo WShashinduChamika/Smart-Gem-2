@@ -14,28 +14,47 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  //message controller
-  final TextEditingController messageController = TextEditingController();
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
     // TODO: implement dispose
-    messageController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void scrollBottom() {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      if (_scrollController.hasClients &&
+          _scrollController.position.maxScrollExtent > 0) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+
     double width = MediaQuery.of(context).size.width / 375;
     double height = MediaQuery.of(context).size.height / 812;
 
     return Consumer<ChatProvider>(builder: (context, chatProvider, child) {
+
+      if(chatProvider.inChatMessages.isNotEmpty){
+        scrollBottom();
+      }
+
+      //auto scroll to bottom on new message
+      chatProvider.addListener(() {
+        if (chatProvider.inChatMessages.isNotEmpty) {
+          scrollBottom();
+        }
+      });
+
       return Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -54,17 +73,19 @@ class _ChatScreenState extends State<ChatScreen> {
                           child: Text("No messages yet"),
                         )
                       : ListView.builder(
+                          controller: _scrollController,
                           itemCount: chatProvider.inChatMessages.length,
                           itemBuilder: (context, index) {
                             final message = chatProvider.inChatMessages[index];
-                            return  message.role == Role.user?
-                                MyMessages(message: message)
-                                : AssistanceMessage(message: message.message.toString());
+                            return message.role == Role.user
+                                ? MyMessages(message: message)
+                                : AssistanceMessage(
+                                    message: message.message.toString());
                           },
                         ),
                 ),
                 //input field
-               BottomChatField(chatProvider: chatProvider),
+                BottomChatField(chatProvider: chatProvider),
               ],
             ),
           ),

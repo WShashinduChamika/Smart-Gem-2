@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:smart_gem/animations/animated_dialog.dart';
 import 'package:smart_gem/providers/chat_provider.dart';
 import 'package:smart_gem/widgets/preview_images.dart';
 
@@ -84,7 +85,15 @@ class _BottomChatFieldState extends State<BottomChatField> {
                 onPressed: () {
                   //send image
                   if(hasImages){
-                     widget.chatProvider.setImageFilesList(filesList: []);
+                     showAnimatedDialog(context: context, 
+                     title: "Delete Images", 
+                     content: "Are you sure you want to delete the images?", 
+                     actionText: "Delete", 
+                     actionPressed: (value){
+                       if(value){
+                         widget.chatProvider.setImageFilesList(filesList: []);
+                       }
+                     });
                   }else{
                     pickImage();
                   }

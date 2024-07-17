@@ -23,7 +23,7 @@ class Message {
       'role': role.index,
       'message': message.toString(),
       'imageUrls': imageUrls,
-      'timeSent': timeSent,
+      'timeSent':  timeSent.toIso8601String(),
     };
   }
 
@@ -35,7 +35,7 @@ class Message {
       role: Role.values[map['role']],
       message: StringBuffer(map['message']),
       imageUrls: List<String>.from(map['imageUrls']),
-      timeSent: map['timeSent'].toDate(),
+      timeSent:  DateTime.parse(map['timeSent']),
     );
   }
 

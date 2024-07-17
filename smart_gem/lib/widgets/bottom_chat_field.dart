@@ -45,6 +45,7 @@ class _BottomChatFieldState extends State<BottomChatField> {
     } finally {
       messageController.clear();
       textFieldFocusNode.unfocus();
+      widget.chatProvider.setImageFilesList(filesList: []);
     }
   }
 
@@ -111,7 +112,7 @@ class _BottomChatFieldState extends State<BottomChatField> {
                       sendMessage(
                         message: messageController.text,
                         chatProvider: widget.chatProvider,
-                        isTextOnly: true,
+                        isTextOnly: hasImages? false : true,
                       );
                     }
                   },
@@ -131,7 +132,7 @@ class _BottomChatFieldState extends State<BottomChatField> {
                     sendMessage(
                       message: messageController.text,
                       chatProvider: widget.chatProvider,
-                      isTextOnly: true,
+                      isTextOnly: hasImages? false : true,
                     );
                   }
                 },

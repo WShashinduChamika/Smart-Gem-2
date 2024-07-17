@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:smart_gem/models/model.dart';
+import 'package:smart_gem/widgets/preview_images.dart';
 
 class MyMessages extends StatelessWidget {
 
@@ -21,10 +23,22 @@ class MyMessages extends StatelessWidget {
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.7,
         ),
-        child: MarkdownBody(
-          selectable: true,
-          data: message.message.toString(), 
-        ),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (message.imageUrls.isNotEmpty)
+                PreviewImage(
+                  message: message,
+                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                child: MarkdownBody(
+                  selectable: true,
+                  data: message.message.toString(),
+                ),
+              ),
+            ],
+          )
       ),
     );
   }

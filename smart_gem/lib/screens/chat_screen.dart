@@ -55,11 +55,32 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       });
 
+      
+
       return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: const Text("Chat Screen"),
-        ),
+        appBar:AppBar(
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+            centerTitle: true,
+            title: const Text('Chat with Gemini'),
+            actions: [
+              if (chatProvider.inChatMessages.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CircleAvatar(
+                    child: IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () async {
+                        
+                              // prepare chat room
+                              await chatProvider.prepareChatRoom(
+                                  isNewChat: true, chatID: '');
+                       
+                      },
+                    ),
+                  ),
+                )
+            ],
+          ),
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(

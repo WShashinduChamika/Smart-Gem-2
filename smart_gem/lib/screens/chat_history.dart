@@ -31,6 +31,8 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
               : Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
                     itemCount: chatHistory.length,
                     itemBuilder: (context, index) {
                       final chat = chatHistory[index];

@@ -155,6 +155,65 @@ class ChatProvider extends ChangeNotifier {
     _isLoading = value;
     notifyListeners();
   }
+  
+   // delete caht
+  Future<void> deletChatMessages({required String chatId}) async {
+    // 1. check if the box is open
+    if (!Hive.isBoxOpen('${Constants.chatMessagesBox}$chatId')) {
+      // open the box
+      await Hive.openBox('${Constants.chatMessagesBox}$chatId');
+
+      // delete all messages in the box
+      await Hive.box('${Constants.chatMessagesBox}$chatId').clear();
+
+      // close the box
+      await Hive.box('${Constants.chatMessagesBox}$chatId').close();
+    } else {
+      // delete all messages in the box
+      await Hive.box('${Constants.chatMessagesBox}$chatId').clear();
+
+      // close the box
+      await Hive.box('${Constants.chatMessagesBox}$chatId').close();
+    }
+
+    // get the current chatId, its its not empty
+    // we check if its the same as the chatId
+    // if its the same we set it to empty
+    if (currentChatID.isNotEmpty) {
+      if (currentChatID == chatId) {
+          setCurrentChatID(id: '');
+        _inChatMessages.clear();
+        notifyListeners();
+      }
+    }
+  }
+
+  // prepare chat room
+  Future<void> prepareChatRoom({
+    required bool isNewChat,
+    required String chatID,
+  }) async {
+    if (!isNewChat) {
+      // 1.  load the chat messages from the db
+      final chatHistory = await loadMessageFromDB(chatId: chatID);
+
+      // 2. clear the inChatMessages
+      _inChatMessages.clear();
+
+      for (var message in chatHistory) {
+        _inChatMessages.add(message);
+      }
+
+      // 3. set the current chat id
+      setCurrentChatID(id: chatID);
+    } else {
+      // 1. clear the inChatMessages
+      _inChatMessages.clear();
+
+      // 2. set the current chat id
+      setCurrentChatID(id: chatID);
+    }
+  }
 
   //send message to gemini and get the streamed response
   Future<void> sendMessage(
@@ -184,7 +243,7 @@ class ChatProvider extends ChangeNotifier {
     // get the last user message id
     final userMessageID = messagesBox.keys.length;
 
-    // assistant messageId
+    //assistant messageId
     //final assistantMessageId = messagesBox.keys.length + 1;
 
     //set user message ID
@@ -248,7 +307,7 @@ class ChatProvider extends ChangeNotifier {
     final assistantMessage = userMessage.copyWith(
       messageID: assistantMessageID,
       role: Role.assistant,
-      message: StringBuffer(''),
+      message: StringBuffer(),
       timeSent: DateTime.now(),
     );
 

@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart' as path;
 import 'package:smart_gem/api/api_services.dart';
 import 'package:smart_gem/constant.dart';
+import 'package:smart_gem/hive/box.dart';
 import 'package:smart_gem/hive/chat_history.dart';
 import 'package:smart_gem/hive/setting.dart';
 import 'package:smart_gem/hive/user_model.dart';
@@ -176,12 +177,22 @@ class ChatProvider extends ChangeNotifier {
     //get the imageUrls
     List<String> imageUrls = getImageUrls(isTextOnly: isTextOnly);
 
+     // open the messages box
+    final messagesBox =
+        await Hive.openBox('${Constants.chatMessagesBox}$chatID');
+
+    // get the last user message id
+    final userMessageID = messagesBox.keys.length;
+
+    // assistant messageId
+    //final assistantMessageId = messagesBox.keys.length + 1;
+
     //set user message ID
-    final userMessageID = const Uuid().v4();
+    //final userMessageID = const Uuid().v4();
 
     //user message
     final userMessage = Message(
-      messageID: userMessageID,
+      messageID: userMessageID.toString(),
       message: StringBuffer(message),
       role: Role.user,
       chatID: chatID,
@@ -206,6 +217,7 @@ class ChatProvider extends ChangeNotifier {
       isTextOnly: isTextOnly,
       historyMessages: historyMessages,
       userMessage: userMessage,
+      messageBox: messagesBox
     );
   }
 
@@ -216,6 +228,7 @@ class ChatProvider extends ChangeNotifier {
     required bool isTextOnly,
     required List<Content> historyMessages,
     required Message userMessage,
+    required Box messageBox,
   }) async {
     //start chat session - only send history is its text only
     final chatSession = _generativeModel!.startChat(
@@ -254,15 +267,51 @@ class ChatProvider extends ChangeNotifier {
           .message
           .write(event.text);
       notifyListeners();
-    }, onDone: () {
+    }, onDone: () async{
       //save the message to the database
-
+       await saveMessagesToDB(
+        chatID: chatID,
+        userMessage: userMessage,
+        assistantMessage: assistantMessage,
+        messagesBox: messageBox,
+      );
       //set isLoading false
       setIsLoading(value: false);
     }).onError((error, stackTrace) {
       //set isLoading false
       setIsLoading(value: false);
     });
+  }
+
+  // save messages to hive db
+  Future<void> saveMessagesToDB({
+    required String chatID,
+    required Message userMessage,
+    required Message assistantMessage,
+    required Box messagesBox,
+  }) async {
+    // save the user messages
+    await messagesBox.add(userMessage.toMap());
+
+    // save the assistant messages
+    await messagesBox.add(assistantMessage.toMap());
+
+    // save chat history with thae same chatId
+    // if its already there update it
+    // if not create a new one
+    final chatHistoryBox = Boxes.getChatHistory();
+
+    final chatHistory = ChatHistory(
+      chatID: chatID,
+      prompt: userMessage.message.toString(),
+      response: assistantMessage.message.toString(),
+      imageUrls: userMessage.imageUrls,
+      timeStamp: DateTime.now(),
+    );
+    await chatHistoryBox.put(chatID, chatHistory);
+
+    // close the box
+    await messagesBox.close();
   }
 
   Future<Content> getContent(
@@ -278,9 +327,9 @@ class ChatProvider extends ChangeNotifier {
       final imageBytes = await Future.wait(imageFeature!);
       final prompt = TextPart(message);
       final imagePart = imageBytes
-          .map((bytes) => DataPart('image/jpg', Uint8List.fromList(bytes)))
+          .map((bytes) => DataPart('image/jpeg', Uint8List.fromList(bytes)))
           .toList();
-      return Content.model([prompt, ...imagePart]);
+      return Content.multi([prompt, ...imagePart]);
     }
   }
 
